@@ -108,7 +108,15 @@ std::vector<cv::RotatedRect> ArmorDetectorNode::search(cv::Mat& frame, cv::Scala
     cv::bilateralFilter(framehsv, framehsv, 9, 75, 75);
     cv::Mat framegrsc;
     cv::cvtColor(frame, framegrsc, cv::COLOR_BGR2GRAY);
-    
+    cv::Mat mask1;
+    cv::Mat mask2;
+
+    cv::inRange(framehsv, lowerHSV, upperHSV, mask1);
+    cv::inRange(framehsv, lowerHSV2, upperHSV2, mask2);
+    cv::Mat cmbmask;
+    cv::bitwise_or(mask1, mask2, cmbmask);
+
+    //created two masks for the two color ranges and combined them into one mask using bitwise_or like the document siad
 
 
     //created a new framehsv converted from bgr to hsv and applied bilateral filter for smoothing 
