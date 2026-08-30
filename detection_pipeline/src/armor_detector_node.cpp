@@ -18,8 +18,8 @@ ArmorDetectorNode::ArmorDetectorNode() : Node("armor_detector_node"), frame_coun
 {
     // Subscribe to the camera publisher topic
     image_sub_ = this->create_subscription<sensor_msgs::msg::Image>(
-        /* TODO: What topic are we subscribing to? What is its name? */, rclcpp::SensorDataQoS(),
-        std::bind(&/* TODO: What method in this class uses the topic message? */, this, std::placeholders::_1));
+        "camera/image_raw", rclcpp::SensorDataQoS(),
+        std::bind(&image_callback, this, std::placeholders::_1));
 
     RCLCPP_INFO(this->get_logger(), "ArmorDetectorNode subscribed to topic");
 }
@@ -103,6 +103,16 @@ int main(int argc, char **argv)
  *  bars that exist on an armor plate.
  */
 std::vector<cv::RotatedRect> ArmorDetectorNode::search(cv::Mat& frame, cv::Scalar lowerHSV, cv::Scalar upperHSV, cv::Scalar lowerHSV2, cv::Scalar upperHSV2) {
+    cv::Mat framehsv;
+    cv::cvtColor(frame, framehsv, cv::COLOR_BGR2HSV);
+    cv::bilateralFilter(framehsv, framehsv, 9, 75, 75);
+    cv::Mat framegrsc;
+    cv::cvtColor(frame, framegrsc, cv::COLOR_BGR2GRAY);
+    
+
+
+    //created a new framehsv converted from bgr to hsv and applied bilateral filter for smoothing 
+
     // TODO: Complete the rest of the method. The onboarding instructions document will be very helpful.
 
     // 1) Image Preprocessing
