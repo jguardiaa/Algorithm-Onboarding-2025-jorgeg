@@ -19,7 +19,7 @@ ArmorDetectorNode::ArmorDetectorNode() : Node("armor_detector_node"), frame_coun
     // Subscribe to the camera publisher topic
     image_sub_ = this->create_subscription<sensor_msgs::msg::Image>(
         "camera/image_raw", rclcpp::SensorDataQoS(),
-        std::bind(&image_callback, this, std::placeholders::_1));
+        std::bind(&ArmorDetectorNode::image_callback, this, std::placeholders::_1));
 
     RCLCPP_INFO(this->get_logger(), "ArmorDetectorNode subscribed to topic");
 }
@@ -36,7 +36,7 @@ ArmorDetectorNode::ArmorDetectorNode() : Node("armor_detector_node"), frame_coun
  */
 void ArmorDetectorNode::image_callback(const sensor_msgs::msg::Image::SharedPtr msg)
 {
-    // Images are represented by cv::Mat objects. This will be useful when you write image processing logic.
+    // Images are represented by cv::Mat objects    std::bind(&image_callback, this, std::placeholders::_1)    std::bind(&image_callback, this, std::placeholders::_1)    std::bind(&image_callback, this, std::placeholders::_1)    std::bind(&image_callback, this, std::placeholders::_1)    std::bind(&image_callback, this, std::placeholders::_1). This will be useful when you write image processing logic.
     cv::Mat frame;
     
     // Read the image from the topic into our frame with the proper color space (BGR8)
@@ -103,34 +103,38 @@ int main(int argc, char **argv)
  *  bars that exist on an armor plate.
  */
 std::vector<cv::RotatedRect> ArmorDetectorNode::search(cv::Mat& frame, cv::Scalar lowerHSV, cv::Scalar upperHSV, cv::Scalar lowerHSV2, cv::Scalar upperHSV2) {
+    cv::Mat framesmth;
+    cv::bilateralFilter(frame, framesmth, 9, 75, 75);
     cv::Mat framehsv;
-    cv::cvtColor(frame, framehsv, cv::COLOR_BGR2HSV);
-    cv::bilateralFilter(framehsv, framehsv, 9, 75, 75);
+    cv::cvtColor(framesmth, framehsv, cv::COLOR_BGR2HSV);
+
+    
 
     //created a new framehsv converted from bgr to hsv and applied bilateral filter for smoothing 
 
-    cv::Mat framegrsc;
+
     cv::Mat mask1;
     cv::Mat mask2;
+    cv::Mat cmbmask;
 
     cv::inRange(framehsv, lowerHSV, upperHSV, mask1);
     cv::inRange(framehsv, lowerHSV2, upperHSV2, mask2);
-    cv::Mat cmbmask;
-    cv::cvtColor(cmbmask, framegrsc, cv::COLOR_BGR2GRAY);
     cv::bitwise_or(mask1, mask2, cmbmask);
+
     cv::Mat cnyresult;
-    cv::Canny(framegrsc, cnyresult, 100, 300);
+    cv::Canny(cmbmask, cnyresult, 100, 300);
     std::vector<std::vector<cv::Point>> contrs;
-    std::vector<std::vector<cv::Point>> contrscln;
     cv::findContours(cnyresult, contrs, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
     for (int i = 0; i < contrs.size(); i++) {
-        double cntrarea = cv::contourArea(contrs[i]);
-        if (cntrarea < 100) {
+        if (cv::contourArea(contrs[i]) < 100) {
             continue;
         }
-
+        cv::RotatedRect rect = cv::minAreaRect(contrs[i]);
+        if (is_light_bar(rect)) {
+            light_bars.push_back(rect);
+        }
     }
-    cv::RotatedRect rect = cv::minAreaRect(contrs);
+
 
 
 
