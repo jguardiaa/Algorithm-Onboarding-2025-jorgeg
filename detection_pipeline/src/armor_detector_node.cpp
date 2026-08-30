@@ -106,20 +106,38 @@ std::vector<cv::RotatedRect> ArmorDetectorNode::search(cv::Mat& frame, cv::Scala
     cv::Mat framehsv;
     cv::cvtColor(frame, framehsv, cv::COLOR_BGR2HSV);
     cv::bilateralFilter(framehsv, framehsv, 9, 75, 75);
+
+    //created a new framehsv converted from bgr to hsv and applied bilateral filter for smoothing 
+
     cv::Mat framegrsc;
-    cv::cvtColor(frame, framegrsc, cv::COLOR_BGR2GRAY);
     cv::Mat mask1;
     cv::Mat mask2;
 
     cv::inRange(framehsv, lowerHSV, upperHSV, mask1);
     cv::inRange(framehsv, lowerHSV2, upperHSV2, mask2);
     cv::Mat cmbmask;
+    cv::cvtColor(cmbmask, framegrsc, cv::COLOR_BGR2GRAY);
     cv::bitwise_or(mask1, mask2, cmbmask);
+    cv::Mat cnyresult;
+    cv::Canny(framegrsc, cnyresult, 100, 300);
+    std::vector<std::vector<cv::Point>> contrs;
+    std::vector<std::vector<cv::Point>> contrscln;
+    cv::findContours(cnyresult, contrs, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+    for (int i = 0; i < contrs.size(); i++) {
+        double cntrarea = cv::contourArea(contrs[i]);
+        if (cntrarea < 100) {
+            continue;
+        }
+
+    }
+    
+
+
 
     //created two masks for the two color ranges and combined them into one mask using bitwise_or like the document siad
 
 
-    //created a new framehsv converted from bgr to hsv and applied bilateral filter for smoothing 
+    
 
     // TODO: Complete the rest of the method. The onboarding instructions document will be very helpful.
 
