@@ -130,7 +130,7 @@ std::vector<cv::RotatedRect> ArmorDetectorNode::search(cv::Mat& frame, cv::Scala
         }
 
     }
-    
+    cv::RotatedRect rect = cv::minAreaRect(contrs);
 
 
 
