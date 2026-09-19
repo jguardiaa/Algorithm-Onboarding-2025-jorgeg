@@ -174,7 +174,7 @@ void ArmorDetectorNode::draw_rotated_rect(cv::Mat &frame, cv::RotatedRect &rect)
  */
 bool ArmorDetectorNode::is_light_bar(cv::RotatedRect &rect)
 {
-    //constants that i need for this method are defined in the header file as follows:
+    //constants that i need for ts stuff idk bro:
 /*  LIGHT_BAR_ANGLE_LIMIT 30.0
     LIGHT_BAR_ASPECT_RATIO_LOWER_LIMIT 2.0
     LIGHT_BAR_WIDTH_LOWER_LIMIT 2.0
@@ -191,6 +191,9 @@ bool ArmorDetectorNode::is_light_bar(cv::RotatedRect &rect)
     }
     if (rect.size.height / rect.size.width > 1.0 / LIGHT_BAR_ASPECT_RATIO_LOWER_LIMIT) {
         return false; // Aspect ratio is above the upper limit
+    }
+    else {
+        return true; // All checks passed, it's a valid light bar
     }
     
 
@@ -216,6 +219,31 @@ bool ArmorDetectorNode::is_light_bar(cv::RotatedRect &rect)
  */
 bool ArmorDetectorNode::is_armor(cv::RotatedRect &left_rect, cv::RotatedRect &right_rect)
 {
+
+/*     #define ARMOR_ANGLE_DIFF_LIMIT 5.0
+    #define ARMOR_LIGHT_BAR_ASPECT_RATIO_RATIO_LIMIT 5.0
+    #define ARMOR_Y_DIFF_LIMIT 1.5
+    #define ARMOR_HEIGHT_RATIO_LIMIT 1.5
+    #define ARMOR_ASPECT_RATIO_LIMIT 2.5 */
+
+    if (abs(left_rect.angle - right_rect.angle) > ARMOR_ANGLE_DIFF_LIMIT) {
+        return false; // Angle difference exceeds limit
+    }
+    if (left_rect.size.height / left_rect.size.width > ARMOR_LIGHT_BAR_ASPECT_RATIO_RATIO_LIMIT || right_rect.size.height / right_rect.size.width > ARMOR_LIGHT_BAR_ASPECT_RATIO_RATIO_LIMIT) {
+        return false; // Aspect ratio exceeds limit
+    }
+    if (abs(left_rect.center.y - right_rect.center.y) / ((left_rect.size.height + right_rect.size.height) / 2) > ARMOR_Y_DIFF_LIMIT) {
+        return false; 
+    }
+    if (left_rect.size.height / right_rect.size.height > ARMOR_HEIGHT_RATIO_LIMIT || right_rect.size.height / left_rect.size.height > ARMOR_HEIGHT_RATIO_LIMIT) {
+        return false; // Height ratio exceeds limit
+    }
+    if ((left_rect.size.width / left_rect.size.height) > ARMOR_ASPECT_RATIO_LIMIT || (right_rect.size.width / right_rect.size.height) > ARMOR_ASPECT_RATIO_LIMIT) {
+        return false; // Armor aspect ratio exceeds limit
+    }
+    else {
+        return true; // All checks passed, it's a valid armor plate
+    }
     // TODO: Use the ARMOR constants defined in the header file to complete this method.
 
     // Verify that the light bars are roughly parallel by checking that their difference does not exceed the threshold
