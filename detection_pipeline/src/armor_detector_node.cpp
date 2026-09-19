@@ -129,10 +129,6 @@ std::vector<cv::RotatedRect> ArmorDetectorNode::search(cv::Mat& frame, cv::Scala
         if (cv::contourArea(contrs[i]) < 100) {
             continue;
         }
-        cv::RotatedRect rect = cv::minAreaRect(contrs[i]);
-        if (is_light_bar(rect)) {
-            light_bars.push_back(rect);
-        }
     }
 
 
@@ -178,7 +174,28 @@ void ArmorDetectorNode::draw_rotated_rect(cv::Mat &frame, cv::RotatedRect &rect)
  */
 bool ArmorDetectorNode::is_light_bar(cv::RotatedRect &rect)
 {
-    // TODO: Use the LIGHT_BAR constants defined in the header file to complete this method.
+    //constants that i need for this method are defined in the header file as follows:
+/*  LIGHT_BAR_ANGLE_LIMIT 30.0
+    LIGHT_BAR_ASPECT_RATIO_LOWER_LIMIT 2.0
+    LIGHT_BAR_WIDTH_LOWER_LIMIT 2.0
+    LIGHT_BAR_HEIGHT_LOWER_LIMIT 5.0 */
+
+    if (rect.size.width < LIGHT_BAR_WIDTH_LOWER_LIMIT || rect.size.height < LIGHT_BAR_HEIGHT_LOWER_LIMIT) {
+        return false; // Width or height is below the lower limit
+    }
+    if (rect.angle < -LIGHT_BAR_ANGLE_LIMIT || rect.angle > LIGHT_BAR_ANGLE_LIMIT) {
+        return false; // Angle is outside the valid range
+    }
+    if (rect.size.height / rect.size.width < LIGHT_BAR_ASPECT_RATIO_LOWER_LIMIT) {
+        return false; // Aspect ratio is below the lower limit
+    }
+    if (rect.size.height / rect.size.width > 1.0 / LIGHT_BAR_ASPECT_RATIO_LOWER_LIMIT) {
+        return false; // Aspect ratio is above the upper limit
+    }
+    
+
+
+   // TODO: Use the LIGHT_BAR constants defined in the header file to complete this method.
     // You may want to read the OpenCV documentation for RotatedRect
 
     // Verify that the light bar width is valid
